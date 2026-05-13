@@ -83,7 +83,7 @@ export function Model({ onPrimaryMovedFar, onSecondaryMovedFar, ...props }) {
   const secondaryTriggeredRef = React.useRef(false)
   const isMobile =
     typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
-  const removeThreshold = isMobile ? 0.3 : 0.5
+  const removeThreshold = isMobile ? 0.1 : 0.1
 
   const handlePrimaryDragEnd = (position) => {
     if (primaryTriggeredRef.current) return

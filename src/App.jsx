@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import './App.css'
 import { Model } from './Model'
+import { WaveBackground } from './WaveBackground'
 
 function AnimatedModel({ onPrimarySolved, onSecondarySolved }) {
   const groupRef = useRef(null)
@@ -40,9 +41,9 @@ function App() {
 
   return (
     <main className="scene-wrap">
-      <div className="status-text">{puzzleSolved ? "let's get itttttttt!!" : 'solve the puzzle'}</div>
+      <div className="status-text">{puzzleSolved ? "you know the thing" : 'solve the puzzle'}</div>
       <Canvas camera={{ position: [0, 0.8, 4], fov: 45 }} shadows>
-        <color attach="background" args={['#e8f2ff']} />
+        <WaveBackground />
         <ambientLight intensity={0.45} />
         <directionalLight
           castShadow
