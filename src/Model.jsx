@@ -77,9 +77,10 @@ function DraggableMesh({ geometry, material, onDragEnd }) {
   )
 }
 
-export function Model({ onPrimaryMovedFar, ...props }) {
+export function Model({ onPrimaryMovedFar, onSecondaryMovedFar, ...props }) {
   const { nodes, materials } = useGLTF('/surfboard.glb')
   const primaryTriggeredRef = React.useRef(false)
+  const secondaryTriggeredRef = React.useRef(false)
 
   const handlePrimaryDragEnd = (position) => {
     if (primaryTriggeredRef.current) return
@@ -87,6 +88,15 @@ export function Model({ onPrimaryMovedFar, ...props }) {
     if (distanceFromStart >= 0.5) {
       primaryTriggeredRef.current = true
       if (onPrimaryMovedFar) onPrimaryMovedFar()
+    }
+  }
+
+  const handleSecondaryDragEnd = (position) => {
+    if (secondaryTriggeredRef.current) return
+    const distanceFromStart = Math.hypot(position[0], position[1], position[2])
+    if (distanceFromStart >= 0.5) {
+      secondaryTriggeredRef.current = true
+      if (onSecondaryMovedFar) onSecondaryMovedFar()
     }
   }
 
@@ -144,6 +154,7 @@ export function Model({ onPrimaryMovedFar, ...props }) {
           <DraggableMesh
             geometry={nodes.defaultMaterial_8.geometry}
             material={materials.phong1SG}
+            onDragEnd={handleSecondaryDragEnd}
           />
         </group>
       </group>
