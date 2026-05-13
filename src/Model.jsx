@@ -81,11 +81,14 @@ export function Model({ onPrimaryMovedFar, onSecondaryMovedFar, ...props }) {
   const { nodes, materials } = useGLTF('/surfboard.glb')
   const primaryTriggeredRef = React.useRef(false)
   const secondaryTriggeredRef = React.useRef(false)
+  const isMobile =
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+  const removeThreshold = isMobile ? 0.3 : 0.5
 
   const handlePrimaryDragEnd = (position) => {
     if (primaryTriggeredRef.current) return
     const distanceFromStart = Math.hypot(position[0], position[1], position[2])
-    if (distanceFromStart >= 0.5) {
+    if (distanceFromStart >= removeThreshold) {
       primaryTriggeredRef.current = true
       if (onPrimaryMovedFar) onPrimaryMovedFar()
     }
@@ -94,7 +97,7 @@ export function Model({ onPrimaryMovedFar, onSecondaryMovedFar, ...props }) {
   const handleSecondaryDragEnd = (position) => {
     if (secondaryTriggeredRef.current) return
     const distanceFromStart = Math.hypot(position[0], position[1], position[2])
-    if (distanceFromStart >= 0.5) {
+    if (distanceFromStart >= removeThreshold) {
       secondaryTriggeredRef.current = true
       if (onSecondaryMovedFar) onSecondaryMovedFar()
     }
