@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { Suspense, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
+import { Preload, useProgress } from '@react-three/drei'
 import './App.css'
 import { Model } from './Model'
 import { WaveBackground } from './WaveBackground'
@@ -35,27 +36,33 @@ function AnimatedModel({ onPrimarySolved, onSecondarySolved }) {
 }
 
 function App() {
+  const { active } = useProgress()
   const [primarySolved, setPrimarySolved] = useState(false)
   const [secondarySolved, setSecondarySolved] = useState(false)
   const puzzleSolved = primarySolved && secondarySolved
 
   return (
     <main className="scene-wrap">
-      <div className="status-text">{puzzleSolved ? "you know the thing" : 'solve the puzzle'}</div>
+      <div className="status-text">
+        {active ? 'loading' : puzzleSolved ? 'you know the thing' : 'solve the puzzle'}
+      </div>
       <Canvas camera={{ position: [0, 0.8, 4], fov: 45 }} shadows>
-        <WaveBackground />
-        <ambientLight intensity={0.45} />
-        <directionalLight
-          castShadow
-          position={[4, 6, 4]}
-          intensity={1}
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
-        />
-        <AnimatedModel
-          onPrimarySolved={() => setPrimarySolved(true)}
-          onSecondarySolved={() => setSecondarySolved(true)}
-        />
+        <Suspense fallback={null}>
+          <WaveBackground />
+          <ambientLight intensity={0.45} />
+          <directionalLight
+            castShadow
+            position={[4, 6, 4]}
+            intensity={1}
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+          />
+          <AnimatedModel
+            onPrimarySolved={() => setPrimarySolved(true)}
+            onSecondarySolved={() => setSecondarySolved(true)}
+          />
+          <Preload all />
+        </Suspense>
       </Canvas>
     </main>
   )

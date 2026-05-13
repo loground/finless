@@ -163,6 +163,8 @@ void main() {
 export function WaveBackground() {
   const materialRef = useRef(null)
   const { size } = useThree()
+  const isMobile = size.width <= 768
+  const bgScale = isMobile ? [120, 70, 1] : [220, 120, 1]
 
   const uniforms = useMemo(
     () => ({
@@ -179,7 +181,7 @@ export function WaveBackground() {
   })
 
   return (
-    <mesh position={[0, -30, -100]} scale={[220, 120, 1]} renderOrder={-10}>
+    <mesh position={[0, -30, -100]} scale={bgScale} renderOrder={-10}>
       <planeGeometry args={[1, 1]} />
       <shaderMaterial
         ref={materialRef}
