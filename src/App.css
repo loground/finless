@@ -33,3 +33,9 @@
   text-shadow: 0 2px 10px rgba(23, 37, 84, 0.15);
   pointer-events: none;
 }
+
+@media (max-width: 768px) {
+  .status-text {
+    top: 34px;
+  }
+}
