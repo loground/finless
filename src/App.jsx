@@ -1,18 +1,43 @@
-import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Stage } from '@react-three/drei'
+import { useRef, useState } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
 import './App.css'
 import { Model } from './Model'
+
+function AnimatedModel() {
+  const groupRef = useRef(null)
+  const [rotateToSecond, setRotateToSecond] = useState(false)
+  const initialRotationY = 0.2
+  const targetRotationY = rotateToSecond ? 2.8 : initialRotationY
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) return
+    const currentY = groupRef.current.rotation.y
+    const lerpFactor = 1 - Math.exp(-4 * delta)
+    groupRef.current.rotation.y =
+      currentY + (targetRotationY - currentY) * lerpFactor
+  })
+
+  return (
+    <group ref={groupRef} position={[0, 1.1, 1.8]} rotation={[0, initialRotationY, 0]}>
+      <Model scale={1} onPrimaryMovedFar={() => setRotateToSecond(true)} />
+    </group>
+  )
+}
 
 function App() {
   return (
     <main className="scene-wrap">
       <Canvas camera={{ position: [0, 0.8, 4], fov: 45 }} shadows>
         <color attach="background" args={['#e8f2ff']} />
-        <ambientLight intensity={0.5} />
-        <Stage intensity={0.8} environment="city" adjustCamera={false}>
-          <Model scale={1} position={[0, 3.8, 6]} rotation={[0,0.2,0]} />
-        </Stage>
-       
+        <ambientLight intensity={0.45} />
+        <directionalLight
+          castShadow
+          position={[4, 6, 4]}
+          intensity={1}
+          shadow-mapSize-width={2048}
+          shadow-mapSize-height={2048}
+        />
+        <AnimatedModel />
       </Canvas>
     </main>
   )

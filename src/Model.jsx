@@ -2,22 +2,40 @@ import React, { useMemo, useState } from 'react'
 import { useGLTF } from '@react-three/drei'
 import { Plane, Vector3 } from 'three'
 
-function DraggableMesh({ geometry, material }) {
+function DraggableMesh({ geometry, material, onDragEnd }) {
   const [position, setPosition] = useState([0, 0, 0])
   const [dragging, setDragging] = useState(false)
   const dragPlane = useMemo(() => new Plane(), [])
   const dragOffset = useMemo(() => new Vector3(), [])
   const dragPoint = useMemo(() => new Vector3(), [])
+  const worldPos = useMemo(() => new Vector3(), [])
+  const localHit = useMemo(() => new Vector3(), [])
+  const lockedZ = useMemo(() => ({ value: 0 }), [])
+  const latestPositionRef = React.useRef([0, 0, 0])
+  const meshRef = React.useRef(null)
 
   const onPointerDown = (event) => {
     event.stopPropagation()
     event.target.setPointerCapture(event.pointerId)
 
+    if (!meshRef.current || !meshRef.current.parent) return
+
+    meshRef.current.getWorldPosition(worldPos)
     dragPlane.setFromNormalAndCoplanarPoint(
-      event.camera.getWorldDirection(new Vector3()),
-      new Vector3(...position),
+      new Vector3(0, 0, 1),
+      worldPos,
     )
-    dragOffset.copy(new Vector3(...position).sub(event.point))
+
+    if (event.ray.intersectPlane(dragPlane, dragPoint)) {
+      localHit.copy(meshRef.current.parent.worldToLocal(dragPoint.clone()))
+      dragOffset.set(
+        position[0] - localHit.x,
+        position[1] - localHit.y,
+        0,
+      )
+    }
+
+    lockedZ.value = position[2]
     setDragging(true)
   }
 
@@ -25,11 +43,15 @@ function DraggableMesh({ geometry, material }) {
     if (!dragging) return
     event.stopPropagation()
     if (event.ray.intersectPlane(dragPlane, dragPoint)) {
-      setPosition([
-        dragPoint.x + dragOffset.x,
-        dragPoint.y + dragOffset.y,
-        dragPoint.z + dragOffset.z,
-      ])
+      if (!meshRef.current || !meshRef.current.parent) return
+      localHit.copy(meshRef.current.parent.worldToLocal(dragPoint.clone()))
+      const nextPosition = [
+        localHit.x + dragOffset.x,
+        localHit.y + dragOffset.y,
+        lockedZ.value,
+      ]
+      latestPositionRef.current = nextPosition
+      setPosition(nextPosition)
     }
   }
 
@@ -37,10 +59,12 @@ function DraggableMesh({ geometry, material }) {
     event.stopPropagation()
     event.target.releasePointerCapture(event.pointerId)
     setDragging(false)
+    if (onDragEnd) onDragEnd(latestPositionRef.current)
   }
 
   return (
     <mesh
+      ref={meshRef}
       castShadow
       receiveShadow
       geometry={geometry}
@@ -53,8 +77,18 @@ function DraggableMesh({ geometry, material }) {
   )
 }
 
-export function Model(props) {
+export function Model({ onPrimaryMovedFar, ...props }) {
   const { nodes, materials } = useGLTF('/surfboard.glb')
+  const primaryTriggeredRef = React.useRef(false)
+
+  const handlePrimaryDragEnd = (position) => {
+    if (primaryTriggeredRef.current) return
+    const distanceFromStart = Math.hypot(position[0], position[1], position[2])
+    if (distanceFromStart >= 0.5) {
+      primaryTriggeredRef.current = true
+      if (onPrimaryMovedFar) onPrimaryMovedFar()
+    }
+  }
 
   return (
     <group {...props} dispose={null}>
@@ -63,6 +97,7 @@ export function Model(props) {
           <DraggableMesh
             geometry={nodes.defaultMaterial.geometry}
             material={materials.phong1SG}
+            onDragEnd={handlePrimaryDragEnd}
           />
           <mesh
             castShadow
