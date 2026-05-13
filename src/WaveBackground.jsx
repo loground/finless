@@ -7,7 +7,7 @@ varying vec2 vUv;
 
 void main() {
   vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  gl_Position = vec4(position.xy, 0.0, 1.0);
 }
 `
 
@@ -163,8 +163,6 @@ void main() {
 export function WaveBackground() {
   const materialRef = useRef(null)
   const { size } = useThree()
-  const isMobile = size.width <= 768
-  const bgScale = isMobile ? [120, 70, 1] : [220, 120, 1]
 
   const uniforms = useMemo(
     () => ({
@@ -181,8 +179,8 @@ export function WaveBackground() {
   })
 
   return (
-    <mesh position={[0, -30, -100]} scale={bgScale} renderOrder={-10}>
-      <planeGeometry args={[1, 1]} />
+    <mesh renderOrder={-10} frustumCulled={false}>
+      <planeGeometry args={[2, 2]} />
       <shaderMaterial
         ref={materialRef}
         vertexShader={vertexShader}
