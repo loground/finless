@@ -10,9 +10,9 @@ function App() {
         <color attach="background" args={['#e8f2ff']} />
         <ambientLight intensity={0.5} />
         <Stage intensity={0.8} environment="city" adjustCamera={false}>
-          <Model scale={1} position={[0, 0, 0]} />
+          <Model scale={1} position={[0, 3.8, 6]} rotation={[0,0.2,0]} />
         </Stage>
-        <OrbitControls enablePan={false} enableDamping dampingFactor={0.08} />
+       
       </Canvas>
     </main>
   )
